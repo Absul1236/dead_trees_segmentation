@@ -21,7 +21,7 @@ The project uses an external dataset consisting of:
 - ground-truth segmentation masks.
 
 Dataset source (Kaggle):  
-**<PASTE_KAGGLE_DATASET_LINK_HERE>**
+**https://www.kaggle.com/datasets/meteahishali/aerial-imagery-for-standing-dead-tree-segmentation?resource=download**
 
 The dataset is **not included** in this repository due to size and license restrictions.
 
@@ -200,21 +200,58 @@ Example paths (replace with your own files):
 ### Input Images
 - RGB image:  
   `data\examples_rgb\RGB_ar037_2019_n_06_04_0.png`
+
+  <p align="center">
+  <img src="data\examples_rgb\RGB_ar037_2019_n_06_04_0.png" width="400">
+  <br>
+  <em>RGB image</em>
+</p>
+
 - NRG image:  
   `data\examples_nrg\NRG_ar037_2019_n_06_04_0.png`
+
+  <p align="center">
+  <img src="data\examples_nrg\NRG_ar037_2019_n_06_04_0.png" width="400">
+  <br>
+  <em>NRG image</em>
+</p>
 
 ### Ground Truth
 - Mask:  
   `data\examples_gt_masks\mask_ar037_2019_n_06_04_0.png`
 
+<p align="center">
+  <img src="data\examples_gt_masks\mask_ar037_2019_n_06_04_0.png" width="400">
+  <br>
+  <em>GT mask</em>
+  </p>
+
 ### Generated Masks
 - RGB-based mask:  
   `data\examples_results\RGB_example_1.png`
+
+<p align="center">
+  <img src="data\examples_results\RGB_example_1.png" width="400">
+  <br>
+  <em>Generated RGB mask</em>
+</p>
+
 - NRG-based mask:  
   `data/examples_results/NRG_example_1.png`
+
+<p align="center">
+  <img src="data/examples_results/NRG_example_1.png" width="400">
+  <br>
+  <em>Generated NRG mask</em>
+</p>
+
 - Merged mask:  
   `data\examples_results\Merge_example_1.png`
-
+  <p align="center">
+  <img src="data\examples_results\Merge_example_1.png" width="400">
+  <br>
+  <em>Combination of RGB and NRG masks</em>
+</p>
 ---
 
 ## Notes
