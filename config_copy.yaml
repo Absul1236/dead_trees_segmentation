@@ -1,36 +1,102 @@
 # =========================
-# Project configuration
+# Input / output paths
 # =========================
-
 paths:
-  # Path to input RGB images (relative to project root)
+  # Directory with RGB input images (relative to project root)
   rgb_dir: data\examples_rgb
 
-  # Path to input NRG images (relative to project root)
+  # Directory with NRG input images (e.g. NIR, Red, Green channels)
   nrg_dir: data\examples_nrg
 
-  # Path to ground-truth segmentation masks
+  # Directory with ground-truth binary masks
   mask_dir: data\examples_gt_masks
 
-  # Root directory for all generated outputs
+  # Root directory where all generated results will be saved
   results_dir: results
 
-  # Subdirectory for masks generated from RGB images
+  # Subdirectory for RGB-based predicted masks
   out_rgb_subdir: RGB
 
-  # Subdirectory for masks generated from NRG images
+  # Subdirectory for NRG-based predicted masks
   out_nrg_subdir: NRG
 
-  # Subdirectory for masks generated using merged RGB + NRG approach
+  # Subdirectory for merged (NRG + RGB) predicted masks
   out_merge_subdir: MERGE
 
 
+# =========================
+# Global evaluation settings
+# =========================
 globals:
   # IoU threshold used to count successful detections
   iou_threshold: 0.1
 
-  # Maximum number of samples visualized during execution
+  # Maximum number of samples for which visual previews are displayed
   print_limit: 3
 
-  # Maximum number of images processed (useful for testing/debugging)
+  # Maximum number of images processed from the dataset
   all_limit: 3
+
+
+# =========================
+# Mask generation parameters
+# =========================
+mask_generation:
+
+  # -------------------------
+  # NRG-based segmentation
+  # -------------------------
+  nrg:
+    # Threshold for normalized NIR channel (pixels below are considered dead trees)
+    nir_threshold: 0.32
+
+    # Threshold for normalized Red channel (pixels above are considered dead trees)
+    r_threshold: 0.45
+
+
+  # -------------------------
+  # RGB-based segmentation (HSV space)
+  # -------------------------
+  rgb:
+    # Lower bound of hue range (wrap-around, targets purple/pink tones)
+    h_low: 0.74
+
+    # Upper bound of hue range (wrap-around)
+    h_high: 0.05
+
+    # Percentile for adaptive saturation threshold within hue band
+    s_q: 60
+
+    # Percentile for adaptive value (brightness) threshold within hue band
+    v_q: 25
+
+    # Minimum allowed saturation threshold
+    min_s: 0.08
+
+    # Minimum allowed value (brightness) threshold
+    min_v: 0.08
+
+    # Maximum allowed value (brightness) threshold
+    max_v: 1.0
+
+
+  # -------------------------
+  # Mask merging parameters
+  # -------------------------
+  merge:
+    # Radius (in pixels) used for dilation when merging RGB and NRG masks
+    radius: 3
+
+
+  # -------------------------
+  # Morphological post-processing
+  # -------------------------
+  clean:
+    # Minimum object size (in pixels) to keep in the binary mask
+    min_size: 80
+
+    # Maximum hole size (in pixels) to fill inside detected regions
+    hole_size: 120
+
+    # Radius of the structuring element used in morphological operations
+    radius: 1
