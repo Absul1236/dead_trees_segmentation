@@ -1,0 +1,62 @@
+# ======================
+# Python
+# ======================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# ======================
+# Virtual environments
+# ======================
+.venv/
+venv/
+ENV/
+env/
+
+# ======================
+# Jupyter / Colab
+# ======================
+.ipynb_checkpoints/
+*.ipynb
+*.log
+
+# ======================
+# IDE / OS
+# ======================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ======================
+# Full datasets (ignored)
+# ======================
+RGB_images/
+NRG_images/
+masks/
+results/
+
+# ======================
+# Allow example subsets
+# ======================
+!RGB_images/examples/
+!NRG_images/examples/
+!masks/examples/
+!results/examples/
+
+# Re-include files inside example folders
+!RGB_images/examples/**
+!NRG_images/examples/**
+!masks/examples/**
+!results/examples/**
+
+# ======================
+# Optional large raster formats
+# ======================
+*.tif
+*.tiff
+*.geotiff
