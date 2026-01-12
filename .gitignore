@@ -39,6 +39,7 @@ RGB_images/
 NRG_images/
 masks/
 results/
+dead_trees_segmentation/
 
 # ======================
 # Allow example subsets
@@ -60,3 +61,8 @@ results/
 *.tif
 *.tiff
 *.geotiff
+# ======================
+# Config files
+# ======================
+config.yaml
+            

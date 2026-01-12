@@ -1,0 +1,36 @@
+# =========================
+# Project configuration
+# =========================
+
+paths:
+  # Path to input RGB images (relative to project root)
+  rgb_dir: data/RGB_images
+
+  # Path to input NRG images (relative to project root)
+  nrg_dir: data/NRG_images
+
+  # Path to ground-truth segmentation masks
+  mask_dir: data/masks
+
+  # Root directory for all generated outputs
+  results_dir: results
+
+  # Subdirectory for masks generated from RGB images
+  out_rgb_subdir: RGB
+
+  # Subdirectory for masks generated from NRG images
+  out_nrg_subdir: NRG
+
+  # Subdirectory for masks generated using merged RGB + NRG approach
+  out_merge_subdir: MERGE
+
+
+globals:
+  # IoU threshold used to count successful detections
+  iou_threshold: 0.1
+
+  # Maximum number of samples visualized during execution
+  print_limit: 15
+
+  # Maximum number of images processed (useful for testing/debugging)
+  all_limit: 50
