@@ -44,16 +44,7 @@ dead_trees_segmentation/
 # ======================
 # Allow example subsets
 # ======================
-!RGB_images/examples/
-!NRG_images/examples/
-!masks/examples/
-!results/examples/
-
-# Re-include files inside example folders
-!RGB_images/examples/**
-!NRG_images/examples/**
-!masks/examples/**
-!results/examples/**
+!data/examples_*/
 
 # ======================
 # Optional large raster formats
