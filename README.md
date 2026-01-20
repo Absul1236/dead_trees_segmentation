@@ -10,7 +10,7 @@ Three segmentation approaches are implemented:
 - **MERGE segmentation**, combining RGB and NRG predictions.
 
 The program generates binary masks, computes evaluation metrics, and **saves all results to user-defined locations on disk**.
-Nothing is displayed on screen by default.
+Nothing is displayed on screen by default. Logs are written to a file and can optionally be mirrored to the console.
 
 ---
 
@@ -116,7 +116,7 @@ The pipeline:
 5. Computes evaluation metrics,
 6. Saves logs and plots to user-defined report locations.
 
-No GUI windows are displayed.
+No GUI windows are displayed. Console output is optional and controlled via a CLI flag.
 
 ---
 
@@ -126,6 +126,11 @@ Any configuration value can be overridden via CLI:
 
 ```bash
 python main.py --results-dir D:/my_results --all-limit 100
+```
+
+Enable console logging in addition to file logging:
+```bash
+python main.py --console
 ```
 
 CLI arguments always override `config.yaml`.
