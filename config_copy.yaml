@@ -1,102 +1,85 @@
 # =========================
-# Input / output paths
+# config.yaml (TEMPLATE)
 # =========================
-paths:
-  # Directory with RGB input images (relative to project root)
-  rgb_dir: data\examples_rgb
+# Copy this file to `config.yaml` before running the program.
+# Do NOT edit this template file (keep it as a baseline reference).
+#
+# Windows (PowerShell):
+#   Copy-Item config_copy.yaml config.yaml
+# Linux/macOS:
+#   cp config_copy.yaml config.yaml
+#
+# CLI arguments override `config.yaml` values when provided.
 
-  # Directory with NRG input images (e.g. NIR, Red, Green channels)
-  nrg_dir: data\examples_nrg
-
-  # Directory with ground-truth binary masks
-  mask_dir: data\examples_gt_masks
-
-  # Root directory where all generated results will be saved
-  results_dir: results
-
-  # Subdirectory for RGB-based predicted masks
-  out_rgb_subdir: RGB
-
-  # Subdirectory for NRG-based predicted masks
-  out_nrg_subdir: NRG
-
-  # Subdirectory for merged (NRG + RGB) predicted masks
-  out_merge_subdir: MERGE
-
-
-# =========================
-# Global evaluation settings
-# =========================
 globals:
-  # IoU threshold used to count successful detections
+  # IoU threshold used only for counting "good" images (IoU >= threshold)
   iou_threshold: 0.1
 
-  # Maximum number of samples for which visual previews are displayed
-  print_limit: 3
+  # How many images to process at most (min(all_limit, number_of_files))
+  all_limit: 50
 
-  # Maximum number of images processed from the dataset
-  all_limit: 3
+  # Kept for compatibility with earlier versions.
+  # In current "file-only mode" there is no on-screen preview,
+  # so this value is not used.
+  print_limit: 15
 
+paths:
+  # Input folders (relative to project root)
+  rgb_dir: ""
+  nrg_dir: ""
+  mask_dir: ""
 
-# =========================
-# Mask generation parameters
-# =========================
+  # Root output folder (relative to project root)
+  results_dir: ""
+
+  # Subfolders for saved output masks
+  out_rgb_subdir: ""
+  out_nrg_subdir: ""
+  out_merge_subdir: ""
+
+  # Subfolder where logs and the plots report are saved
+  reports_subdir: ""
+
+logging:
+  # Logging level: DEBUG / INFO / WARNING / ERROR
+  level: "INFO"
+
+  # Log filename saved inside results/reports/
+  filename: "run.log"
+
+report:
+  # Combined plots filename saved inside results/reports/
+  # (IoU histograms + TP/FP/FN bars for NRG/RGB/MERGE)
+  filename: "metrics_report.png"
+
 mask_generation:
-
-  # -------------------------
-  # NRG-based segmentation
-  # -------------------------
   nrg:
-    # Threshold for normalized NIR channel (pixels below are considered dead trees)
+    # NRG mask thresholds after per-image normalization to [0,1]
     nir_threshold: 0.32
-
-    # Threshold for normalized Red channel (pixels above are considered dead trees)
     r_threshold: 0.45
 
-
-  # -------------------------
-  # RGB-based segmentation (HSV space)
-  # -------------------------
   rgb:
-    # Lower bound of hue range (wrap-around, targets purple/pink tones)
+    # Hue band for purple/pink tones (wrap-around range)
     h_low: 0.74
-
-    # Upper bound of hue range (wrap-around)
     h_high: 0.05
 
-    # Percentile for adaptive saturation threshold within hue band
+    # Percentiles for adaptive thresholds computed inside the hue band
     s_q: 60
-
-    # Percentile for adaptive value (brightness) threshold within hue band
     v_q: 25
 
-    # Minimum allowed saturation threshold
+    # Minimum allowed thresholds (fallbacks)
     min_s: 0.08
-
-    # Minimum allowed value (brightness) threshold
     min_v: 0.08
 
-    # Maximum allowed value (brightness) threshold
-    max_v: 1.0
+    # Maximum value threshold
+    max_v: 1.00
 
-
-  # -------------------------
-  # Mask merging parameters
-  # -------------------------
   merge:
-    # Radius (in pixels) used for dilation when merging RGB and NRG masks
+    # Radius of NRG dilation used to keep RGB predictions near NRG positives
     radius: 3
 
-
-  # -------------------------
-  # Morphological post-processing
-  # -------------------------
   clean:
-    # Minimum object size (in pixels) to keep in the binary mask
+    # Morphological post-processing parameters
     min_size: 80
-
-    # Maximum hole size (in pixels) to fill inside detected regions
     hole_size: 120
-
-    # Radius of the structuring element used in morphological operations
     radius: 1

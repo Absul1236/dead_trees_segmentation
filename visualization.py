@@ -1,5 +1,10 @@
+import os
 import numpy as np
+
+import matplotlib
+matplotlib.use("Agg")  # disable GUI backends 
 import matplotlib.pyplot as plt
+
 from skimage import io
 
 """
@@ -8,53 +13,11 @@ visualization.py
 Visualization utilities.
 
 This module is responsible for:
-- plotting IoU histograms,
-- plotting confusion matrix distributions,
-- creating RGB/NRG/GT overlay images,
-- displaying per-image previews during processing.
+- creating overlay images (optional),
+- saving a single combined report figure with plots (file-only mode).
 
-All functions here are optional for analysis and debugging
-and do not affect segmentation results.
+No GUI windows are shown. All figures are saved to disk.
 """
-
-def plot_confusion_matrix(tp, fp, fn, tn, name):
-    """Plot TP/FP/FN proportions for a method."""
-    labels = ["TP", "FP", "FN"]
-    values = [sum(tp), sum(fp), sum(fn)]
-    total = sum(values) if sum(values) != 0 else 1
-    values = [sum(tp) / total * 100, sum(fp) / total * 100, sum(fn) / total * 100]
-
-    plt.figure(figsize=(6, 4))
-    plt.bar(labels, values)
-    plt.title(f"Confusion Matrix values for {name}")
-    plt.xlabel("Category")
-    plt.ylabel("Count in %")
-    plt.show()
-
-
-def plotter(all_iou, name):
-    """Plot histogram of IoU scores and show basic statistics."""
-    plt.figure(figsize=(10, 6))
-    plt.hist(all_iou, bins=20, edgecolor="black", alpha=0.7)
-    plt.title(f"Distribution of IoU Scores for {name}")
-    plt.xlabel("IoU Score")
-    plt.ylabel("Number of Images")
-    plt.grid(axis="y", alpha=0.75)
-
-    stats_text = (
-        f"Mean IoU: {np.mean(all_iou):.4f}\n"
-        f"Median IoU: {np.median(all_iou):.4f}\n"
-        f"Min IoU: {np.min(all_iou):.4f}\n"
-        f"Max IoU: {np.max(all_iou):.4f}"
-    )
-    plt.text(
-        0.05, 0.95, stats_text,
-        transform=plt.gca().transAxes,
-        fontsize=10,
-        verticalalignment="top",
-        bbox=dict(boxstyle="round,pad=0.5", fc="yellow", alpha=0.5),
-    )
-    plt.show()
 
 
 def combine_masks(original_mask, rgb_mask, nrg_mask):
@@ -76,29 +39,60 @@ def combine_masks(original_mask, rgb_mask, nrg_mask):
     return combined.astype(np.uint8)
 
 
-def shower(idx, paths_masks, paths_rgbs, paths_nrgs, iou_nrg, iou_rgb, iou_merge, merged_mask, rgb_merge_vis):
-    """Show preview figure for one sample (RGB, NRG, GT, overlay, merged) and print IoU values."""
-    fig, axes = plt.subplots(1, 5, figsize=(14, 5))
+def save_metrics_report(
+    out_path,
+    all_iou_nrg, all_iou_rgb, all_iou_merge,
+    tp_nrg, fp_nrg, fn_nrg, tn_nrg,
+    tp_rgb, fp_rgb, fn_rgb, tn_rgb,
+    tp_merge, fp_merge, fn_merge, tn_merge
+):
+    """
+    Save ONE figure containing:
+    - IoU histograms for NRG/RGB/MERGE
+    - TP/FP/FN percentage bars for NRG/RGB/MERGE
+    """
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
-    axes[0].imshow(io.imread(paths_rgbs[idx]))
-    axes[0].set_title("RGB")
-    axes[0].axis("off")
+    fig, axes = plt.subplots(2, 3, figsize=(16, 9))
 
-    axes[1].imshow(io.imread(paths_nrgs[idx]))
-    axes[1].set_title("NRG")
-    axes[1].axis("off")
+    # --- Row 1: IoU histograms ---
+    axes[0, 0].hist(all_iou_nrg, bins=20, edgecolor="black", alpha=0.7)
+    axes[0, 0].set_title("NRG IoU distribution")
+    axes[0, 0].set_xlabel("IoU")
+    axes[0, 0].set_ylabel("Count")
 
-    axes[2].imshow(io.imread(paths_masks[idx]), cmap="gray")
-    axes[2].set_title("Ground truth")
-    axes[2].axis("off")
+    axes[0, 1].hist(all_iou_rgb, bins=20, edgecolor="black", alpha=0.7)
+    axes[0, 1].set_title("RGB IoU distribution")
+    axes[0, 1].set_xlabel("IoU")
+    axes[0, 1].set_ylabel("Count")
 
-    axes[3].imshow(rgb_merge_vis)
-    axes[3].set_title("NRG/RGB/GT (R/G/B)")
-    axes[3].axis("off")
+    axes[0, 2].hist(all_iou_merge, bins=20, edgecolor="black", alpha=0.7)
+    axes[0, 2].set_title("MERGE IoU distribution")
+    axes[0, 2].set_xlabel("IoU")
+    axes[0, 2].set_ylabel("Count")
 
-    axes[4].imshow(merged_mask, cmap="gray")
-    axes[4].set_title("MERGE")
-    axes[4].axis("off")
+    # --- Row 2: TP/FP/FN in % (TN omitted for readability in bars) ---
+    def _tp_fp_fn_percent(tp, fp, fn):
+        tp_s, fp_s, fn_s = sum(tp), sum(fp), sum(fn)
+        total = tp_s + fp_s + fn_s
+        if total == 0:
+            return [0.0, 0.0, 0.0]
+        return [tp_s / total * 100, fp_s / total * 100, fn_s / total * 100]
 
-    print(f"IoU_NRG: {iou_nrg:.4f} | IoU_RGB: {iou_rgb:.4f} | IoU_MERGE: {iou_merge:.4f}")
-    plt.show()
+    labels = ["TP", "FP", "FN"]
+
+    axes[1, 0].bar(labels, _tp_fp_fn_percent(tp_nrg, fp_nrg, fn_nrg))
+    axes[1, 0].set_title("NRG TP/FP/FN (%)")
+    axes[1, 0].set_ylabel("%")
+
+    axes[1, 1].bar(labels, _tp_fp_fn_percent(tp_rgb, fp_rgb, fn_rgb))
+    axes[1, 1].set_title("RGB TP/FP/FN (%)")
+    axes[1, 1].set_ylabel("%")
+
+    axes[1, 2].bar(labels, _tp_fp_fn_percent(tp_merge, fp_merge, fn_merge))
+    axes[1, 2].set_title("MERGE TP/FP/FN (%)")
+    axes[1, 2].set_ylabel("%")
+
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=200)
+    plt.close(fig)
