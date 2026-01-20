@@ -13,6 +13,11 @@ Responsible for:
 
 This file does NOT contain algorithmic logic.
 It only connects individual modules into a single workflow.
+
+FILE-ONLY MODE:
+- No results are printed to console by default.
+- All textual output is written to a log file(can be changed in ).
+- All plots are saved to a single report image file.
 """
 
 from io_utils import (
@@ -22,6 +27,7 @@ from io_utils import (
     apply_cli_overrides,
     save_mask,
     path_maker,
+    setup_logger,
 )
 from segmentation import (
     generate_dead_tree_mask_nrg,
@@ -34,15 +40,11 @@ from metrics import (
     compare_masks,
     confusion_matrix,
 )
-from visualization import (
-    combine_masks,
-    shower,
-)
 from summary_utils import summary
 
 
 def main():
-    """Run the full pipeline: load data, generate masks, save outputs, compute metrics, and plot results."""
+    """Run the full pipeline: load data, generate masks, save outputs, compute metrics, and write report files."""
     args = parse_args()
     project_root = get_project_root()
     cfg = load_config_yaml(os.path.join(project_root, "config.yaml"))
@@ -51,17 +53,31 @@ def main():
         iou_th, print_limit, all_limit,
         input_rgb_dir, input_nrg_dir, input_mask_dir,
         results_dir, out_rgb_dir, out_nrg_dir, out_merge_dir,
+        reports_dir, log_level, log_file, report_file,
         nrg_cfg, rgb_cfg, merge_cfg, clean_cfg
     ) = apply_cli_overrides(cfg, args, project_root)
 
-    # Create output directories
+    # Create output directories (masks + reports)
     os.makedirs(out_rgb_dir, exist_ok=True)
     os.makedirs(out_nrg_dir, exist_ok=True)
     os.makedirs(out_merge_dir, exist_ok=True)
+    os.makedirs(reports_dir, exist_ok=True)
+
+    # Logger: file-only by default; enable console only if --console was passed
+    logger = setup_logger(level=log_level, log_file=log_file, console=bool(args.console))
+
+    logger.info("Starting pipeline...")
+    logger.info(f"Input RGB dir: {input_rgb_dir}")
+    logger.info(f"Input NRG dir: {input_nrg_dir}")
+    logger.info(f"Input mask dir: {input_mask_dir}")
+    logger.info(f"Results dir: {results_dir}")
+    logger.info(f"Reports dir: {reports_dir}")
 
     # Prepare data lists
     paths_masks, paths_rgbs, paths_nrgs = path_maker(input_mask_dir, input_rgb_dir, input_nrg_dir)
     max_n = min(all_limit, len(paths_masks))
+    logger.info(f"Found files: masks={len(paths_masks)}, rgb={len(paths_rgbs)}, nrg={len(paths_nrgs)}")
+    logger.info(f"Processing limit (all_limit): {max_n}")
 
     # Storage for statistics
     all_iou_nrg, all_iou_rgb, all_iou_merge = [], [], []
@@ -72,7 +88,6 @@ def main():
     count_nrg = 0
     count_rgb = 0
     count_merge = 0
-    limiter = 0
     operations_count = 0
 
     # Main loop
@@ -88,7 +103,7 @@ def main():
         pred_nrg = generate_dead_tree_mask_nrg(
             nrg_img,
             nir_thr=float(nrg_cfg["nir_threshold"]),
-            r_thr=float(nrg_cfg["r_threshold"])
+            r_thr=float(nrg_cfg["r_threshold"]),
         )
         pred_nrg_flat = pred_nrg.ravel().astype(np.uint8)
 
@@ -108,7 +123,7 @@ def main():
             v_q=float(rgb_cfg["v_q"]),
             min_s=float(rgb_cfg["min_s"]),
             min_v=float(rgb_cfg["min_v"]),
-            max_v=float(rgb_cfg["max_v"])
+            max_v=float(rgb_cfg["max_v"]),
         )
         pred_rgb_flat = pred_rgb.ravel().astype(np.uint8)
 
@@ -124,7 +139,7 @@ def main():
             pred_merge,
             min_size=int(clean_cfg["min_size"]),
             hole_size=int(clean_cfg["hole_size"]),
-            radius=int(clean_cfg["radius"])
+            radius=int(clean_cfg["radius"]),
         )
         pred_merge_flat = pred_merge.ravel().astype(np.uint8)
 
@@ -140,16 +155,6 @@ def main():
         save_mask(pred_rgb, os.path.join(out_rgb_dir, base_name))
         save_mask(pred_merge, os.path.join(out_merge_dir, base_name))
 
-        # Preview (limited)
-        if limiter < print_limit:
-            vis = combine_masks(gt, pred_rgb, pred_nrg)
-            shower(
-                i, paths_masks, paths_rgbs, paths_nrgs,
-                iou_nrg, iou_rgb, iou_merge,
-                pred_merge, vis
-            )
-            limiter += 1
-
         # Count above threshold
         if iou_nrg >= iou_th:
             count_nrg += 1
@@ -158,7 +163,7 @@ def main():
         if iou_merge >= iou_th:
             count_merge += 1
 
-    # Summary output + plots
+    # Summary output + plots saved to report_file
     summary(
         iou_th,
         count_rgb, count_nrg, count_merge,
@@ -166,8 +171,12 @@ def main():
         all_iou_nrg, all_iou_rgb, all_iou_merge,
         tp_nrg, fp_nrg, fn_nrg, tn_nrg,
         tp_rgb, fp_rgb, fn_rgb, tn_rgb,
-        tp_merge, fp_merge, fn_merge, tn_merge
+        tp_merge, fp_merge, fn_merge, tn_merge,
+        report_file,
+        logger,
     )
+
+    logger.info("Pipeline finished.")
 
 
 if __name__ == "__main__":

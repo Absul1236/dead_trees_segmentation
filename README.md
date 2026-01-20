@@ -152,6 +152,14 @@ After creating `config.yaml`, run the pipeline from the project root:
 python main.py
 ```
 
+By default, the program does not print results to the terminal. All textual output is written to a log file, and plots are saved to a report image file.
+
+To also mirror logs to the console, run:
+
+```bash
+python main.py --console
+```
+
 During execution, the program:
 1. Loads parameters from `config.yaml`,
 2. Reads RGB, NRG, and ground-truth images,
@@ -159,7 +167,7 @@ During execution, the program:
 4. Applies morphological post-processing,
 5. Saves generated masks to the selected output directory,
 6. Computes IoU and confusion-matrix statistics,
-7. Displays example visualizations and metric plots.
+7. Saves example visualizations and metric plots to files.
 
 The `results/` directory and its subfolders are created automatically during execution.
 
@@ -214,7 +222,7 @@ Example paths (replace with your own files):
   `data\examples_rgb\RGB_ar037_2019_n_06_04_0.png`
 
   <p align="center">
-  <img src="data\examples_rgb\RGB_ar037_2019_n_06_04_0.png" width="400">
+  <img src="data/examples_rgb/RGB_ar037_2019_n_06_04_0.png" width="400">
   <br>
   <em>RGB image</em>
 </p>
@@ -223,7 +231,7 @@ Example paths (replace with your own files):
   `data\examples_nrg\NRG_ar037_2019_n_06_04_0.png`
 
   <p align="center">
-  <img src="data\examples_nrg\NRG_ar037_2019_n_06_04_0.png" width="400">
+  <img src="data/examples_nrg/NRG_ar037_2019_n_06_04_0.png" width="400">
   <br>
   <em>NRG image</em>
 </p>
@@ -233,7 +241,7 @@ Example paths (replace with your own files):
   `data\examples_gt_masks\mask_ar037_2019_n_06_04_0.png`
 
 <p align="center">
-  <img src="data\examples_gt_masks\mask_ar037_2019_n_06_04_0.png" width="400">
+  <img src="data/examples_gt_masks/mask_ar037_2019_n_06_04_0.png" width="400">
   <br>
   <em>GT mask</em>
   </p>
@@ -243,7 +251,7 @@ Example paths (replace with your own files):
   `data\examples_results\RGB_example_1.png`
 
 <p align="center">
-  <img src="data\examples_results\RGB_example_1.png" width="400">
+  <img src="data/examples_results/RGB_example_1.png" width="400">
   <br>
   <em>Generated RGB mask</em>
 </p>
@@ -260,7 +268,7 @@ Example paths (replace with your own files):
 - Merged mask:  
   `data\examples_results\Merge_example_1.png`
   <p align="center">
-  <img src="data\examples_results\Merge_example_1.png" width="400">
+  <img src="data/examples_results/Merge_example_1.png" width="400">
   <br>
   <em>Combination of RGB and NRG masks</em>
 </p>
