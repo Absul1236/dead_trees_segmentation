@@ -1,16 +1,16 @@
 # Dead Tree Segmentation (RGB / NRG / MERGE)
 
-This project implements a **file-only** Python pipeline for segmentation of standing dead trees using aerial imagery.
+This project implements a Python-based pipeline for segmentation of standing dead trees using aerial imagery.
 The pipeline is based on classical image processing methods (no machine learning) and is fully configurable
 via a YAML configuration file and command-line arguments.
 
 Three segmentation approaches are implemented:
-- **NRG-based segmentation** (thresholding on NIR and Red channels),
-- **RGB-based segmentation** (adaptive HSV thresholding),
-- **MERGE segmentation**, combining RGB and NRG predictions.
+- NRG-based segmentation (thresholding on NIR and Red channels),
+- RGB-based segmentation (adaptive HSV thresholding),
+- MERGE segmentation, combining RGB and NRG predictions.
 
-The program generates binary masks, computes evaluation metrics, and **saves all results to user-defined locations on disk**.
-Nothing is displayed on screen by default. Logs are written to a file and can optionally be mirrored to the console.
+The program generates binary masks, computes evaluation metrics, and saves reports and plots to files
+(no on-screen visualization by default).
 
 ---
 
@@ -21,26 +21,25 @@ The project uses an external dataset consisting of:
 - NRG images,
 - ground-truth segmentation masks.
 
-Dataset source (Kaggle):  
+Dataset source (Kaggle):
 https://www.kaggle.com/datasets/meteahishali/aerial-imagery-for-standing-dead-tree-segmentation
 
-The dataset is **not included** in this repository due to size and license restrictions.
+The dataset is not included in this repository due to size and license restrictions.
 
 ---
 
 ## Project Structure
 
-```
 project/
-├── main.py
-├── io_utils.py
-├── segmentation.py
-├── metrics.py
-├── visualization.py
-├── summary_utils.py
+├── main.py                  # main executable script
+├── io_utils.py              # configuration, CLI, logging, IO helpers
+├── segmentation.py          # segmentation algorithms
+├── metrics.py               # evaluation metrics
+├── visualization.py         # plot generation (file-only)
+├── summary_utils.py         # reporting utilities
 │
-├── config_copy.yaml
-├── config.yaml
+├── config_copy.yaml         # configuration template (DO NOT EDIT)
+├── config.yaml              # user configuration (created by the user)
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
@@ -51,7 +50,7 @@ project/
 │   └── examples_gt_masks/
 │
 └── results/
-```
+    └── reports/
 
 ---
 
@@ -65,90 +64,80 @@ project/
 
 ---
 
-## Configuration System
+## Virtual Environment Setup
 
-### Template file
+Create a virtual environment:
 
-`config_copy.yaml` is a template file and **must not be edited**.
+python -m venv venv
 
-### User configuration (REQUIRED)
+Activate it:
 
-Before running the program, the user must create `config.yaml` by copying:
+Windows:
+venv\Scripts\activate
 
-```bash
-cp config_copy.yaml config.yaml
-```
+Linux / macOS:
+source venv/bin/activate
 
-Only `config.yaml` should be modified by the user.
+Install dependencies:
+
+pip install -r requirements.txt
 
 ---
 
-## User-Defined Output Paths
+## Configuration (config.yaml)
 
-All output paths are defined by the user in `config.yaml` or overridden via CLI.
+Before running the program, you must create config.yaml by copying the template:
 
-Example:
+cp config_copy.yaml config.yaml
 
-```yaml
-paths:
-  results_dir: "results"
-  out_rgb_subdir: "RGB"
-  out_nrg_subdir: "NRG"
-  out_merge_subdir: "MERGE"
-  reports_subdir: "reports"
-```
+Do not edit config_copy.yaml. Only modify config.yaml.
 
-The program automatically creates all required directories.
+All paths and global parameters are defined in config.yaml, including:
+- input image directories,
+- output directory for generated masks,
+- reports directory for logs and plots,
+- segmentation thresholds and morphological parameters.
 
 ---
 
 ## Running the Program
 
-```bash
-python main.py
-```
+Run the pipeline from the project root:
 
-The pipeline:
+python main.py
+
+During execution, the program:
 1. Loads configuration (YAML + CLI overrides),
 2. Reads RGB, NRG and ground-truth images,
 3. Generates segmentation masks,
-4. Saves masks to user-defined directories,
-5. Computes evaluation metrics,
-6. Saves logs and plots to user-defined report locations.
+4. Saves all generated masks to disk,
+5. Computes IoU and confusion-matrix statistics,
+6. Saves logs and plots to files.
 
-No GUI windows are displayed. Console output is optional and controlled via a CLI flag.
+By default, the program does not print results to the terminal.
+All textual output is written to a log file, and plots are saved to a report image file.
 
----
+To also mirror logs to the console, run:
 
-## Command-Line Overrides
-
-Any configuration value can be overridden via CLI:
-
-```bash
-python main.py --results-dir D:/my_results --all-limit 100
-```
-
-Enable console logging in addition to file logging:
-```bash
 python main.py --console
-```
-
-CLI arguments always override `config.yaml`.
 
 ---
 
 ## Output
 
-- Binary masks (RGB / NRG / MERGE)
-- `run.log` – full textual log
-- `metrics_report.png` – combined evaluation plots
+For each input image, the following files are produced:
+- RGB-based segmentation mask,
+- NRG-based segmentation mask,
+- MERGE (RGB + NRG) segmentation mask.
 
-All outputs are saved to user-defined directories.
+Additionally, the program saves:
+- results/reports/run.log – full textual output,
+- results/reports/metrics_report.png – combined IoU and TP/FP/FN plots.
 
 ---
 
 ## Notes
 
 - Input images must have matching filenames across modalities.
-- Paths may be relative or absolute.
-- Designed for reproducible batch processing.
+- All paths may be absolute or relative.
+- The pipeline is designed for reproducible batch processing.
