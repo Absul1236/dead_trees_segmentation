@@ -18,11 +18,6 @@ globals:
   # How many images to process at most (min(all_limit, number_of_files))
   all_limit: 50
 
-  # Kept for compatibility with earlier versions.
-  # In current "file-only mode" there is no on-screen preview,
-  # so this value is not used.
-  print_limit: 15
-
 paths:
   # Input folders (relative to project root)
   rgb_dir: ""
